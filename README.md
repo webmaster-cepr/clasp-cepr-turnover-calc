@@ -11,11 +11,11 @@ Please note that these questions are best directed to human resources profession
 
 - css/
 
-⋅⋅⋅styles.css
+    styles.css
 
-⋅⋅⋅styles.scss
+    styles.scss
 
-⋅⋅⋅integrate_styles.scss
+    integrate_styles.scss
 
 - js/
 
