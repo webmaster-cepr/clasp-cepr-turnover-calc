@@ -7,12 +7,14 @@ Please note that these questions are best directed to human resources profession
 
 ## Setup
 
--calculator.html
--css/
-    styles.css
-    styles.scss
-    integrate_styles.scss
--js/
+- calculator.html
+
+- css/
+...styles.css
+...styles.scss
+...integrate_styles.scss
+
+- js/
 
 
 ## Contributing
