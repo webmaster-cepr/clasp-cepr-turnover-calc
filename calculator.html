@@ -1,0 +1,876 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>The CLASP-CEPR Turnover Calculator</title>
+<link rel="stylesheet" href="css/styles.css" type="text/css" />
+
+<style type="text/css">
+a:link {text-decoration: none; font-weight: lighter}
+a:visited {text-decoration: none; color: blue; font-weight: lighter}
+td.st {text-decoration: line-through}
+.whitespace {color: white}
+tr {vertical-align: top}
+tr.lastline {border-bottom-width: 1px; border-left-width: 0px; border-right-width: 0px; border-top-width: 0px; border-style: solid; border-color: black}
+.hotspot {color: blue; border-bottom-style: dotted; border-bottom-width: 1px}
+.annotation {color: red; font-style: italic}
+a.ison {color: green}
+a.isoff {color: red}
+a.notyet {color: red; border-bottom-style: dotted; border-bottom-width: 1px; font-style: italic}
+input.dollars {text-align: right; border-style: hidden; color: blue;}
+input.dollars:disabled {text-align: right; border-style: hidden; color: grey}
+input.finaldollars:disabled {text-align: right; border-style: hidden; font-weight: bold}
+input.cents {text-align: left; border-style: hidden; color: blue}
+input.cents:disabled {text-align: left; border-style: hidden; color: grey;}
+input.finalcents:disabled {text-align: left; border-style: hidden; font-weight: bold;}
+td.boldt {font-weight: bold}
+td.box {border-style: solid; border-bottom-width: 1px; border-top-width: 1px; border-left-width: 1px; border-right-width: 0px;}
+input.box {border-style: solid; text-align: center}
+input.bbox {border-style: hidden; text-align: center; color: grey}
+input.bbox:disabled {border-style: hidden; text-align: center}
+input.bline {border-style: solid; text-align: center; border-bottom-width: 1px; border-top-width: 0px; border-left-width: 0px; border-right-width: 0px; border-color: black; color: blue;}
+input.bline:disabled {border-style: solid; text-align: center; border-bottom-width: 1px; border-top-width: 0px; border-left-width: 0px; border-right-width: 0px; color: grey}
+input.box:disabled {border-style: solid; text-align: center; color:grey; border-color:black}
+td.calc {font-weight: bold}
+td.lineno {font-weight: bold; border-top-width: 0px; border-right-width: 0px;}
+td.linenoearly {font-weight: bold; text-align: center; border-top-width: 0px; border-right-width: 0px}
+td.lineno2 {font-weight: bold; border-style: solid; border-bottom-width: 1px; border-left-width: 1px; text-align: center; vertical-align: bottom; border-top-width: 0px; border-right-width: 0px; border-color: black}
+td.money {font-weight: bold; border-style: solid; border-top-width: 0px; border-right-width: 0px; border-bottom-width: 1px; border-left-width: 1px; text-align: center; vertical-align: bottom; border-color: black}
+td.lineletearly {font-weight: bold; text-align: right; border-top-width: 0px; border-right-width: 0px}
+td.lineletlate {font-weight: bold; text-align: right; border-top-width: 0px; border-right-width: 0px}
+td.note {font-style: italic; font-weight: bold}
+td.schedule {font-style: italic; vertical-align: top}
+td.slineno {font-style: italic; vertical-align: top; border-top-width: 0px; border-top-width: 0px; border-right-width: 0px}
+td.slineno2 {font-style: italic; border-style: solid; border-bottom-width: 1px; border-left-width: 1px; text-align: center; vertical-align: bottom; border-top-width: 0px; border-right-width: 0px; border-color: black}
+td.slineletearly {font-style: italic; text-align: center}
+td.slineletlate {font-style: italic; text-align: right}
+td.gbox {border-style: solid; border-left-width: 1px; border-top-width: 0px; border-right-width: 0px; border-bottom-width: 0px;  border-color: black; background-color: lightgrey;}
+td.ebox {border-left-width: 1px; border-bottom-width: 0px; border-style: solid; border-top-width: 0px; border-right-width: 0px;  border-color: black}
+td.firstline {border-bottom-width: 1px; border-style: solid}
+td.headline {font-size: 20pt; font-weight: bold; text-align: center; vertical-align: baseline}
+td.subheadline {font-size: 15pt; font-weight: bold; text-align: left; vertical-align: baseline}
+</style>
+<script type="text/javascript">
+
+ //<![CDATA[
+
+function getElementsByClass(searchClass,node,tag) {
+	var classElements = new Array();
+	if ( node == null )
+		node = document;
+	if ( tag == null )
+		tag = '*';
+	var els = node.getElementsByTagName(tag);
+	var elsLen = els.length;
+	var pattern = new RegExp("(^|\\s)"+searchClass+"(\\s|$)");
+	for (i = 0, j = 0; i<elsLen; i++) {
+		if ( pattern.test(els[i].className) ) {
+			classElements[j] = els[i];
+			j++;
+		}
+	}
+	return classElements;
+}
+
+// Hotspots control toggles and swaps
+var hotspots;
+
+// Toggles may be turned on and off, either directly or by flipping
+var toggles;
+
+// Swaps are always flipped, so must be carefully initialized.
+var swaps;
+
+var exes;
+
+var nexsave = [];
+var exsave = [];
+
+function visibilitytoggle() {
+    
+    hotspots = getElementsByClass('hotspot',document,'*');
+    toggles = getElementsByClass('toggle',document,'*');
+    swaps = getElementsByClass('swap',document,'*');
+    dollarss = getElementsByClass('dollars',document,'*');
+    centss = getElementsByClass('cents',document,'*');
+    finaldollarss = getElementsByClass('finaldollars',document,'*');
+    finalcentss = getElementsByClass('finalcents',document,'*');
+    exes = getElementsByClass('nst',document,'*');
+
+    for (var i=0; i<hotspots.length; i++) {
+        if (hotspots[i].title=="hourpay") {
+            hotspots[i].onclick = function() {document.form.dnk.value=1-document.form.dnk.value;toggle('dnktext');toggle(this.title);doCalcs(document.form);};
+        }
+        else {
+            hotspots[i].onclick = function() {toggle(this.title);};
+        }
+    }
+    
+    for (var i=0; i<toggles.length; i++) {
+        toggles[i].style.display = 'none';
+    }
+    
+    for (var i=0; i<dollarss.length; i++) {
+        if (dollarss[i].name=="l1d" || dollarss[i].name=="l1b" || dollarss[i].name=="l2d" || dollarss[i].name=="l3d" || dollarss[i].name=="l4ad" || dollarss[i].name=="l4bd" || dollarss[i].name=="l4cd" || dollarss[i].name=="l4dd" || dollarss[i].name=="l5ad" || dollarss[i].name=="l5bd" || dollarss[i].name=="l5cd" || dollarss[i].name=="l5dd" || dollarss[i].name=="l5ed" || dollarss[i].name=="l6d" || dollarss[i].name=="l7ad" || dollarss[i].name=="l7bd") {
+                dollarss[i].disabled=false;
+        }
+        else {
+            dollarss[i].disabled=true;
+        }
+        dollarss[i].value="0";
+        dollarss[i].size="10";
+        dollarss[i].maxlength="10";
+        dollarss[i].type="text";
+        dollarss[i].onchange = function() {doCalcs(document.form);};
+        
+    }
+    for (var i=0; i<centss.length; i++) {
+        if (centss[i].name=="l1c" || centss[i].name=="l2c" || centss[i].name=="l4ac" || centss[i].name=="l4bc" || centss[i].name=="l4cc" || centss[i].name=="l4dc") {
+                centss[i].disabled=false;
+        }
+        else {
+            centss[i].disabled=true;
+        }
+        centss[i].value="00";
+        centss[i].size="2";
+        centss[i].maxlength="2";
+        centss[i].type="text";
+        centss[i].onchange = function() {doCalcs(document.form);};
+    }
+    
+    for (var i=0; i<finaldollarss.length; i++) {
+        finaldollarss[i].disabled=true;
+        finaldollarss[i].size="10";
+        finaldollarss[i].maxlength="10";
+        finaldollarss[i].type="text";
+    }
+    
+    for (var i=0; i<finalcentss.length; i++) {
+        finalcentss[i].disabled=true;
+        finalcentss[i].size="2";
+        finalcentss[i].maxlength="2";
+        finalcentss[i].type="text";
+    }
+    
+    toggle('dnktext','on');
+    toggle('ppd','on');
+  
+    initialize_form(document.form);
+    
+    updateTurnover(document.form, 1);
+    
+
+}
+
+function xOut(onoff) {
+
+    var xx = (onoff=='on' ? 'st' : 'nst');
+    for (var i=0; i<exes.length; i++) {
+        exes[i].className = xx;
+    }
+    
+}
+
+function toggle(ttit, onoff) {
+
+    for (var i=0; i<toggles.length; i++) {    
+        if (toggles[i].title==ttit) {
+            if (toggles[i].style.display == 'none' && onoff != 'off') {
+                toggles[i].style.display = '';
+            }
+            else {
+                if (onoff != 'on') {
+                    toggles[i].style.display = 'none';
+                    if (ttit=="schedAdetail") {
+                        toggle('wl7','off');
+                    }
+                    if (ttit=="amt") {
+                        toggle('amtx','off');
+                    }
+                    if (ttit=="nrmi") {
+                        toggle('nrmiw','off');
+                    }
+                    if (ttit=="rmi") {
+                        toggle('rmiw','off');
+                    }
+                }
+            }
+        }
+    }
+
+    for (var i=0; i<swaps.length; i++) {
+        if (swaps[i].title==ttit) {
+            if (swaps[i].style.display == 'none') {
+                swaps[i].style.display = '';
+            }
+            else {
+                swaps[i].style.display = 'none';
+            }
+        }
+    }
+
+}
+
+function parseIntw0(n) {
+
+    len = n.length;
+    if (len>1) {
+        return((n[0]=="0" ? parseIntw0(n.substr(1,len)) : parseInt(n)));
+    }
+    return(parseInt(n));
+
+}
+
+function parseCurrHelper(fir,rest) {
+    var len = rest.indexOf(",");
+    if (len<0) return(1000*fir+parseFloat(rest));
+    var next = 1000*fir+parseIntw0(rest.substr(0,len));
+    var sec = rest.substr(len+1,rest.length);
+    return(parseCurrHelper(next,sec));
+}
+
+function parseCurr(item) {
+
+    var neg = item.indexOf("-");
+    item = item.substring(neg+1,item.length);
+
+    var len = item.indexOf(",");
+    if (len<0) return((neg<0 ? 1 : -1)*parseFloat(item));
+    return((neg<0 ? 1 : -1)*parseCurrHelper(0,item));
+
+}
+
+function parseCents(ds,cs) {
+
+    var neg = ds.indexOf("-");
+    ds = ds.substring(neg+1,ds.length);
+
+    var len = ds.indexOf(",");
+    if (len<0) {
+        dabs = parseFloat(ds);
+    }
+    else {
+        dabs = parseCurrHelper(0,ds);
+    }
+
+    var cabs = parseInt(cs);
+    cabs += 100*dabs
+    var c = (neg<0 ? 1 : -1)*cabs
+        
+    return(c);
+
+}
+
+function writeDollarGroup(dg) {
+    if (dg<1) return("000");
+    if (dg<10) return("00"+dg);
+    if (dg<100) return("0"+dg);
+    return(dg);
+}
+
+function writeDollarsHelper(dollars) {
+    if (dollars<1000) return(dollars);
+    var fir=Math.floor(dollars/1000);
+    var rest=dollars-1000*fir;
+    return(writeDollarsHelper(fir)+","+writeDollarGroup(rest));
+}
+
+function writeDollars(dollarsncents) {
+
+    if(isNaN(dollarsncents)) {
+//        alert("NaN detected!");
+        return("NaN");
+    }
+    
+    var neg = (dollarsncents<0 ? -1 : 1);
+    var dollars = Math.floor(neg*dollarsncents/100);
+        
+    if (dollars<1000) return((neg<0 ? "-" : "")+dollars);
+    var fir=Math.floor(dollars/1000);
+    var rest=dollars-1000*fir;
+    return((neg<0 ? "-" : "")+writeDollarsHelper(fir)+","+writeDollarGroup(rest));
+    
+}
+
+function writeCents(dollarsncents) {
+
+    dollarsncents = Math.abs(dollarsncents);
+    var dolls = Math.floor(dollarsncents/100);
+    var cents = dollarsncents-100*dolls;
+
+    return (cents<10 ? (cents<1 ? "00" : "0"+cents) : cents);
+}
+
+function roundtozero(n) {
+    // Rounds n toward zero
+    if (n>0) return(Math.floor(n));
+    return(Math.ceil(n));
+}
+
+function l9(form) {
+
+    var exh = parseCents(form.l5ad.value,"00")+parseCents(form.l5bd.value,"00")+parseCents(form.l5cd.value,"00")+parseCents(form.l5dd.value,"00")+parseCents(form.l5ed.value,"00")+parseCents(form.l7ad.value,"00")+parseCents(form.l8d.value,"00");
+    form.exh.value = writeDollars(exh);
+    
+    var nonexh = parseCents(form.l6d.value,"00")+parseCents(form.l7bd.value,"00")+parseCents(form.nl8d.value,"00");
+    form.nonexh.value = writeDollars(nonexh);
+    
+    var exw = parseCents(form.l1dall.value,form.l1call.value);
+    form.exwd.value = writeDollars(exw);
+    form.exwc.value = writeCents(exw);
+    
+    var nonexw = parseCents(form.l2d.value,form.l2c.value);
+    form.nonexwd.value = writeDollars(nonexw);
+    form.nonexwc.value = writeCents(nonexw);
+    
+    var tex = exh*exw/100;
+    form.texd.value = writeDollars(tex);
+    form.texc.value = writeCents(tex);
+
+    var nontex = nonexh*nonexw/100;
+    form.tnonexd.value = writeDollars(nontex);
+    form.tnonexc.value = writeCents(nontex);
+    
+    var wagebill = tex+nontex;
+    form.wagebilld.value = writeDollars(wagebill);
+    form.wagebillc.value = writeCents(wagebill);
+    
+    var average = wagebill+parseCents(form.l4d.value,form.l4c.value);
+    form.averaged.value = writeDollars(average);
+    form.averagec.value = writeCents(average);
+    
+    var total = average*parseCents(form.l3d.value,"00")/100;
+    form.totald.value = writeDollars(total);
+    form.totalc.value = writeCents(total);
+
+}
+
+function l5(form) {
+
+    var l5a = parseCents(form.l5ad.value,"00");
+    form.l5ad.value = writeDollars(l5a);
+    var l5b = parseCents(form.l5bd.value,"00");
+    form.l5bd.value = writeDollars(l5b);
+    var l5c = parseCents(form.l5cd.value,"00");
+    form.l5cd.value = writeDollars(l5c);
+    var l5d = parseCents(form.l5dd.value,"00");
+    form.l5dd.value = writeDollars(l5d);
+    var l5e = parseCents(form.l5ed.value,"00");
+    form.l5ed.value = writeDollars(l5e);
+    
+    form.l6d.value = writeDollars(parseCents(form.l6d.value,"00"));
+    form.l7ad.value = writeDollars(parseCents(form.l7ad.value,"00"));
+    form.l7bd.value = writeDollars(parseCents(form.l7bd.value,"00"));
+    
+    var d = 0;
+    if (form.exempt[0].checked) {
+        if (form.nprof[0].checked) {
+            toggle('pph','on');
+            toggle('ppd','off');
+            d = parseCents(form.nisprofh.value,"00");
+            form.nisprofh.value = writeDollars(d);
+        }
+        if (form.nprof[1].checked) {
+            toggle('pph','off');
+            toggle('ppd','on');
+            d = parseCents(form.nisprofd.value,"00");
+            form.nisprofd.value = writeDollars(d);
+            var h = parseCents(form.nisphours.value,"00");
+            form.nisphours.value = writeDollars(h);
+            d *= h/100;
+        }
+        d = Math.round(d/2);
+        form.nl8d.value = writeDollars(d);
+        form.l8d.value = writeDollars(0);
+    }
+    if (form.exempt[1].checked) {
+        if (form.prof[0].checked) {
+            toggle('pph','on');
+            toggle('ppd','off');
+            d = parseCents(form.isprofh.value,"00");
+            form.isprofh.value = writeDollars(d);
+            d *= parseCents(form.l1b.value,"00")/100;
+        }
+        if (form.prof[1].checked) {
+            toggle('pph','off');
+            toggle('ppd','on');
+            d = parseCents(form.isprofd.value,"00");
+            form.isprofd.value = writeDollars(d);
+            d *= 52*parseCents(form.l1b.value,"00")/1200;
+        }
+        d = Math.round(d/2);
+        form.nl8d.value = writeDollars(0);
+        form.l8d.value = writeDollars(d);
+    }
+
+    l9(form);
+
+}
+
+function l4(form) {
+
+    var l4a = parseCents(form.l4ad.value,form.l4ac.value);
+    form.l4ad.value = writeDollars(l4a);
+    form.l4ac.value = writeCents(l4a);
+    var l4b = parseCents(form.l4bd.value,form.l4bc.value);
+    form.l4bd.value = writeDollars(l4b);
+    form.l4bc.value = writeCents(l4b);
+    var l4c = parseCents(form.l4cd.value,form.l4cc.value);
+    form.l4cd.value = writeDollars(l4c);
+    form.l4cc.value = writeCents(l4c);
+    var l4d = parseCents(form.l4dd.value,form.l4dc.value);
+    form.l4dd.value = writeDollars(l4d);
+    form.l4dc.value = writeCents(l4d);
+    var l4 = l4a+l4b+l4c+l4d;
+    form.l4d.value = writeDollars(l4);
+    form.l4c.value = writeCents(l4);
+
+    l5(form);
+
+}
+
+function l3(form) {
+
+    if (form.isex[0].checked) {
+        toggle('isexyes','off');
+        form.l3d.value = "0";
+        form.l3d.disabled = true;
+    }
+    if (form.isex[1].checked) {
+        toggle('isexyes','on');
+        form.l3d.disabled = false;
+    }
+    var dnc = parseCents(form.l3d.value,"00");
+    form.l3d.value = writeDollars(dnc);
+
+    l4(form);
+
+}
+
+function l2(form) {
+
+    var dnc = parseCents(form.l2d.value,form.l2c.value);
+    form.l2d.value = writeDollars(dnc);
+    form.l2c.value = writeCents(dnc);
+    
+    l3(form);
+
+}
+
+function l1(form) {
+
+    if (form.dnk.value==0) {
+        form.l1dall.disabled=false;
+        form.l1call.disabled=false;
+        form.l1ad.disabled=true;
+        form.l1ac.disabled=true;
+        var l1 = parseCents(form.l1dall.value,form.l1call.value);
+        form.l1dall.value = writeDollars(l1);
+        form.l1call.value = writeCents(l1);
+        var l1b = parseCents(form.l1b.value,"00");
+        form.l1b.value = writeDollars(l1b);
+
+        var l1d = l1;
+        form.l1dd.value = form.l1dall.value;
+        form.l1dc.value = form.l1call.value;
+        var l1c = l1b*52;
+        form.l1cd.value = writeDollars(l1c);
+        var l1a = l1c*l1d/100;
+        form.l1ad.value = writeDollars(l1a);
+        form.l1ac.value = writeCents(l1a);        
+        
+    }
+    else {
+        form.l1dall.disabled=true;
+        form.l1call.disabled=true;
+        form.l1ad.disabled=false;
+        form.l1ac.disabled=false;
+        var l1a = parseCents(form.l1ad.value,form.l1ac.value);
+        form.l1ad.value = writeDollars(l1a);
+        form.l1ac.value = writeCents(l1a);
+        var l1b = parseCents(form.l1b.value,"00");
+        form.l1b.value = writeDollars(l1b);
+        var l1c = l1b*52;
+        form.l1cd.value = writeDollars(l1c);
+        var l1d = Math.round(100*l1a/l1c);
+        form.l1dd.value = writeDollars(l1d);
+        form.l1dc.value = writeCents(l1d);
+        form.l1dall.value = form.l1dd.value;
+        form.l1call.value = form.l1dc.value;
+    }
+        
+    l2(form);
+
+}
+
+function doCalcs(form) {
+
+    l1(form);
+    
+    if (form.exempt[0].checked) {
+        store_form(form,nexsave);
+    }
+    if (form.exempt[1].checked) {
+        store_form(form,exsave);
+    }
+
+}
+
+function initialize_form(form) {
+
+    form.l1dall.value = "50";
+    form.l1call.value = "02";
+    form.l1ad.value = "104,041";
+    form.l1ac.value = "60";
+    form.l1b.value = "40";
+    form.l2d.value = "15";
+    form.l2c.value = "17";
+
+    //  Line 3 Y/N
+    nexsave[0] = false;
+    exsave[0] = false;
+    //  Line 3
+    nexsave[1] = "10"
+    exsave[1] = "10"
+    //  Line 4a
+    nexsave[2] = "100";
+    nexsave[3] = "00";
+    exsave[2] = "1000";
+    exsave[3] = "00";
+    //  Line 4b
+    nexsave[4] = "200";
+    nexsave[5] = "00";
+    exsave[4] = "4800";
+    exsave[5] = "00";
+    //  Line 4c
+    nexsave[6] = "100";
+    nexsave[7] = "00";
+    exsave[6] = "3000";
+    exsave[7] = "00";
+    //  Line 4d
+    nexsave[8] = "0";
+    nexsave[9] = "00";
+    exsave[8] = "0";
+    exsave[9] = "00";
+    //  Line 5a
+    nexsave[10] = "10";
+    exsave[10] = "15";
+    //  Line 5b
+    nexsave[11] = "10";
+    exsave[11] = "10";
+    //  Line 5c
+    nexsave[12] = "20";
+    exsave[12] = "48";
+    //  Line 5d
+    nexsave[13] = "10";
+    exsave[13] = "10";
+    //  Line 5e
+    nexsave[14] = "0";
+    exsave[14] = "0";
+    //  Line 6
+    nexsave[15] = "2";
+    exsave[15] = "2";
+    //  Line 7a
+    nexsave[16] = "16";
+    exsave[16] = "32";
+    //  Line 7b
+    nexsave[17] = "16";
+    exsave[17] = "0";
+
+    form.nisprofh.value = "80";
+    form.nisprofd.value = "10";
+    form.nisphours.value = "8";
+    form.isprofh.value = "13";
+    form.isprofd.value = "3";
+    form.isphours.value = "";
+
+}
+
+function store_form(form,sarray) {
+
+    sarray[0] = form.isex[0].checked;
+    sarray[1] = form.l3d.value;
+    sarray[2] = form.l4ad.value;
+    sarray[3] = form.l4ac.value;
+    sarray[4] = form.l4bd.value;
+    sarray[5] = form.l4bc.value;
+    sarray[6] = form.l4cd.value;
+    sarray[7] = form.l4cc.value;
+    sarray[8] = form.l4dd.value;
+    sarray[9] = form.l4dc.value;
+    sarray[10] = form.l5ad.value;
+    sarray[11] = form.l5bd.value;
+    sarray[12] = form.l5cd.value;
+    sarray[13] = form.l5dd.value;
+    sarray[14] = form.l5ed.value;
+    sarray[15] = form.l6d.value;
+    sarray[16] = form.l7ad.value;
+    sarray[17] = form.l7bd.value;
+
+   
+}
+
+function restore_form(form,sarray) {
+
+    if (sarray[0]) {
+        form.isex[0].checked=true;
+        form.isex[1].checked=false;
+    }
+    else {
+        form.isex[0].checked=false;
+        form.isex[1].checked=true;
+    }
+    form.l3d.value = sarray[1];
+    form.l4ad.value = sarray[2];
+    form.l4ac.value = sarray[3];
+    form.l4bd.value = sarray[4];
+    form.l4bc.value = sarray[5];
+    form.l4cd.value = sarray[6];
+    form.l4cc.value = sarray[7];
+    form.l4dd.value = sarray[8];
+    form.l4dc.value = sarray[9];
+    form.l5ad.value = sarray[10];
+    form.l5bd.value = sarray[11];
+    form.l5cd.value = sarray[12];
+    form.l5dd.value = sarray[13];
+    form.l5ed.value = sarray[14];
+    form.l6d.value = sarray[15];
+    form.l7ad.value = sarray[16];
+    form.l7bd.value = sarray[17];
+    
+};
+
+function updateTurnover(form) {
+
+    if (form.exempt[0].checked) {
+        restore_form(form,nexsave);
+        toggle('nexlang','on');
+        toggle('exlang','off');
+        doCalcs(form);
+    }
+    if (form.exempt[1].checked) {
+        restore_form(form,exsave);
+        toggle('nexlang','off');
+        toggle('exlang','on');
+        doCalcs(form);
+    }
+
+}
+
+</script>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-3236332-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+ //]]>
+
+</script>
+</head>
+<body onload="visibilitytoggle();">
+<table style="padding-top:20px;" width="780" cellspacing="0" cellpadding="0" border="0" align="center">
+<tbody><tr>
+<td class="pageIntro" colspan="2">
+<br>
+<span class="bigger">How Much Does Employee Turnover Really Cost Your Business?</span><h3>Use This Turnover Calculator To Find Out</h3>
+<p>Turnover is costly. Despite the harm it can cause to the bottom line,
+ many businesses do not actually know how much turnover costs them. 
+Policies that support workers, such as paid sick days, a fair minimum 
+wage, investments in workforce training, and work sharing, can help 
+decrease turnover and reduce these costs. This turnover calculator 
+provides an estimate of how much turnover costs your organization. </p>
+<p>Please note that these questions are best directed to human resources
+ professionals or to business owners who handle their own staffing. 
+Costs may vary for different types of employees. The turnover calculator
+ allows you to vary wages, weekly hours, and recruiting and hiring costs
+ to calculate the cost of turnover for different categories of workers. <sup>[<a name="id1" href="#ftn.id1">1</a>]</sup></p>
+
+<form name="form" action="doCalcs(form);" method="get">
+<input type="hidden" name="dnk" value="0">
+<table style="border-collapse:collapse; font-size:12px;" cellspacing="0" border="0">
+<tbody><tr class="lastline">
+<td colspan="2">Turnover</td><td colspan="10"></td></tr>
+<tr>
+<td colspan="9">Do you wish to calculate for exempt or non-exempt workers?</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td>
+</tr>
+<tr>
+<td colspan="1"></td><td colspan="8"><input type="radio" name="exempt" value="0" checked="checked" onclick="updateTurnover(form);">Non-exempt, or hourly</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td>
+</tr>
+<tr class="lastline">
+<td colspan="1"></td><td colspan="8"><input type="radio" name="exempt" value="1" onclick="updateTurnover(form);">Exempt, or salaried</td><td class="lineno2"></td><td class="money"></td><td class="money"></td>
+</tr>
+<tr>
+<td class="boldt">1</td><td></td><td colspan="7">What is the typical hourly pay of an <b>exempt or salaried</b> employee in your business? (Employees are exempt if they are not eligible for overtime pay.) If you <b>DO <a class="toggle" title="dnktext" style="">NOT</a></b> know the typical hourly pay, <a class="hotspot" title="hourpay">click here.</a></td><td class="lineno2">1</td><td class="money"><input class="dollars" name="l1dall" size="10" type="text" value="50"></td><td class="money"><input class="cents" name="l1call" size="2" type="text" value="02"></td>
+</tr>
+<tr>
+<td class="sched"></td><td class="slineletearly">a</td><td colspan="4">What is the typical annual pay of an exempt or salaried employee in your business?</td><td class="slineno2">1a</td><td class="money"><input class="dollars" name="l1ad" disabled="disabled" size="10" type="text" value="104,041"></td><td class="money"><input class="cents" name="l1ac" disabled="disabled" size="2" type="text" value="60"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td>
+</tr>
+<tr>
+<td></td><td class="slineletearly">b</td><td>How many hours a week does 
+an exempt or salaried employee in your business usually work? (Exempt 
+employees typically work 40 hours a week.)</td><td class="slineno2">1b</td><td class="money"><input class="dollars" name="l1b" size="10" type="text" value="40"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td>
+<td class="gbox"></td><td class="ebox"></td><td class="ebox"></td>
+</tr>
+<tr>
+<td></td><td class="slineletearly">c</td><td colspan="4">Take the number of hours worked per week and multiply it by 52 weeks</td><td class="slineno2">1c</td><td class="money"><input class="dollars" name="l1cd" disabled="disabled" size="10" type="text" value="2,080"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td>
+</tr>
+<tr>
+<td></td><td class="slineletearly">d</td><td colspan="4">Divide annual pay by this number to determine hourly wage.</td><td class="slineno2">1d</td><td class="money"><input class="dollars" name="l1dd" disabled="disabled" size="10" type="text" value="50"></td><td class="money"><input class="cents" name="l1dc" disabled="disabled" size="2" type="text" value="02"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td>
+</tr>
+<tr>
+<td class="boldt">2</td><td></td><td colspan="7">What is the typical hourly wage of a <b>non-exempt or hourly</b> employee in your business? (Employees are non-exempt if they are eligible for overtime pay.)</td><td class="lineno2">2</td><td class="money"><input class="dollars" name="l2d" size="10" type="text" value="15"></td><td class="money"><input class="cents" name="l2c" size="2" type="text" value="17"></td>
+</tr>
+<tr>
+<td class="boldt">3</td><td></td><td colspan="7">In the past year, did you replace any <b><a class="toggle" title="nexlang" style="">non-exempt or hourly</a><a class="toggle" title="exlang" style="display: none;">exempt or salaried</a></b> employees who separated from the firm for any reason?</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td>
+</tr>
+<tr>
+<td colspan="2"></td><td colspan="7"><input type="radio" name="isex" value="0" onclick="doCalcs(form);">No</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td>
+</tr>
+<tr class="lastline">
+<td colspan="2"></td><td colspan="7"><input type="radio" name="isex" value="1" checked="checked" onclick="doCalcs(form);">Yes<a class="toggle" title="isexyes" style="">... If yes, how many in the past 12 months?</a></td><td class="lineno2">3</td><td class="money"><input class="dollars" name="l3d" size="10" type="text" value="10"></td><td class="money"></td>
+</tr>
+<tr>
+<td class="boldt">4</td>
+<td></td>
+<td colspan="4">Using a typical situation in which you sought to fill a 
+vacancy, how much does your organization spend in recruiting a typical 
+new <b><a class="toggle" title="nexlang" style="">non-exempt or hourly</a><a class="toggle" title="exlang" style="display: none;">exempt or salaried</a></b> employee...</td>
+<td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td>
+</tr>
+<tr>
+<td class="sched"></td><td class="slineletearly">a</td><td colspan="4">... on advertising?</td><td class="slineno2">4a</td><td class="money"><input class="dollars" name="l4ad" size="10" type="text" value="100"></td><td class="money"><input class="cents" name="l4ac" size="2" type="text" value="00"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="sched"></td><td class="slineletearly">b</td><td colspan="4">... on agency fees?</td><td class="slineno2">4b</td><td class="money"><input class="dollars" name="l4bd" size="10" type="text" value="200"></td><td class="money"><input class="cents" name="l4bc" size="2" type="text" value="00"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="sched"></td><td class="slineletearly">c</td><td colspan="4">... on travel for interviews?</td><td class="slineno2">4c</td><td class="money"><input class="dollars" name="l4cd" size="10" type="text" value="100"></td><td class="money"><input class="cents" name="l4cc" size="2" type="text" value="00"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="sched"></td><td class="slineletearly">d</td><td colspan="4">... on other?</td><td class="slineno2">4d</td><td class="money"><input class="dollars" name="l4dd" size="10" type="text" value="0"></td><td class="money"><input class="cents" name="l4dc" size="2" type="text" value="00"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr class="lastline">
+<td class="boldt"></td><td></td><td colspan="7">Total of lines 4a through 4d</td><td class="lineno2">4</td><td class="money"><input class="dollars" name="l4d" disabled="disabled" size="10" type="text" value="400"></td><td class="money"><input class="cents" name="l4c" disabled="disabled" size="2" type="text" value="00"></td>
+</tr>
+<tr>
+<td class="boldt">5</td><td></td><td colspan="1">Using a typical situation in which you sought to fill a vacancy, estimate how many <b>exempt</b> hours were spent to fill the position...</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="sched"></td><td class="slineletearly">a</td><td colspan="1">... on screening? (e.g., reviewing resumes)</td><td class="slineno2">5a</td><td class="money"><input class="dollars" name="l5ad" size="10" type="text" value="10"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="sched"></td><td class="slineletearly">b</td><td colspan="1">... on selecting? (e.g., preliminary telephone interviews with candidates)</td><td class="slineno2">5b</td><td class="money"><input class="dollars" name="l5bd" size="10" type="text" value="10"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="sched"></td><td class="slineletearly">c</td><td colspan="1">... on hiring? (e.g., interviewing top candidates, calling references)</td><td class="slineno2">5c</td><td class="money"><input class="dollars" name="l5cd" size="10" type="text" value="20"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="sched"></td><td class="slineletearly">d</td><td colspan="1">... on drug testing and background checks?</td><td class="slineno2">5d</td><td class="money"><input class="dollars" name="l5dd" size="10" type="text" value="10"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="sched"></td><td class="slineletearly">e</td><td colspan="1">... on other?</td><td class="slineno2">5e</td><td class="money"><input class="dollars" name="l5ed" size="10" type="text" value="0"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="boldt">6</td>
+<td>
+</td><td colspan="4">Using a typical situation in which you sought to fill a vacancy, estimate how many hours your <b>non-exempt or hourly</b>
+ staff spent on administrative tasks (e.g., entering the new hire into 
+the payroll system, signing the new hire up for health insurance or 
+other benefits).</td><td class="slineno2">6</td><td class="money"><input class="dollars" name="l6d" size="10" type="text" value="2"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="boldt">7</td><td></td><td colspan="1">Is there an orientation/training for new <b><a class="toggle" title="nexlang" style="">non-exempt or hourly</a><a class="toggle" title="exlang" style="display: none;">exempt or salaried</a></b> employees AFTER they are hired, i.e. on company time? If so, how many hours are typically devoted to this...</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td>
+</td><td class="slineletearly">a</td>
+<td>... by the trainer<a class="toggle" title="exlang" style="display: none;">, <b>the new hire</b></a> and other <b>exempt</b> workers?</td>
+<td class="slineno2">7a</td>
+<td class="money"><input class="dollars" name="l7ad" size="10" type="text" value="16"></td>
+<td class="money"></td><td class="ebox"></td>
+<td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td></td><td class="slineletearly">b</td><td colspan="4">... by<a class="toggle" title="nexlang" style=""> <b>the new hire</b> and</a> other <b>non-exempt</b> workers?</td><td class="slineno2">7b</td><td class="money"><input class="dollars" name="l7bd" size="10" type="text" value="16"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr class="toggle" title="nexlang" style="">
+<td class="boldt">8</td><td class="slineletearly"></td><td colspan="4">How long does it take a typical <b>non-exempt or hourly</b> employee to become fully proficient at the job? (<a class="hotspot" title="nonhournote">Note</a><a class="toggle" title="nonhournote" style="display: none;">: <i>Because the new worker will be less than fully proficient over this time, the cost will be <b>half</b> the specified hours.</i></a>)</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox"></td>
+</tr>
+<tr class="toggle" title="nexlang" style="">
+<td colspan="2"></td><td colspan="4"><input type="radio" name="nprof" value="0" onclick="doCalcs(form);">Hours<a class="toggle" title="pph" style="display: none;">... <input class="bline" name="nisprofh" value="80" size="3" maxlength="3" type="text" onchange="doCalcs(form);"></a></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr class="toggle" title="nexlang" style="border-width: 0px 0px 1px; border-style: solid; border-color: black;">
+<td colspan="2"></td><td colspan="4"><input type="radio" name="nprof" value="1" checked="checked" onclick="doCalcs(form);">Days<a class="toggle" title="ppd" style="">... <input class="bline" name="nisprofd" value="10" size="2" maxlength="2" type="text" onchange="doCalcs(form);">(x<input class="bline" name="nisphours" value="8" size="2" maxlength="2" type="text" onchange="doCalcs(form);">hours worked per day)</a></td><td class="slineno2">8</td><td class="money"><input class="dollars" name="nl8d" disabled="disabled" size="10" type="text" value="40"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr class="toggle" title="exlang" style="display: none;">
+<td class="boldt">8</td><td class="slineletearly"></td><td colspan="1">How long does it take a typical <b>exempt or salaried</b> employee to become fully proficient at the job? (<a class="hotspot" title="hournote">Note</a><a class="toggle" title="hournote" style="display: none;">: <i>Because the new worker will be less than fully proficient over this time, the cost will be <b>half</b> the specified hours.</i></a>)</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td colspan="3"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr class="toggle" title="exlang" style="display: none;">
+<td colspan="2"></td><td colspan="1"><input type="radio" name="prof" value="0" onclick="doCalcs(form);">Weeks<a class="toggle" title="pph" style="display: none;">... <input class="bline" name="isprofh" value="13" size="3" maxlength="3" type="text" onchange="doCalcs(form);"></a></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td colspan="3"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr class="toggle" title="exlang" style="border-width: 0px 0px 1px; border-style: solid; border-color: black; display: none;">
+<td colspan="2"></td>
+<td colspan="1">
+<input type="radio" name="prof" value="1" checked="checked" onclick="doCalcs(form);">Months<a class="toggle" title="ppd" style="">...
+<input class="bline" name="isprofd" value="3" size="1" maxlength="2" type="text" onchange="doCalcs(form);">
+<input name="isphours" size="2" maxlength="2" type="text" onchange="doCalcs(form);"></a></td>
+<td class="slineno2">8</td><td class="money"><input class="dollars" name="l8d" disabled="disabled" size="10" type="text" value="0"></td><td class="money"></td><td colspan="3"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="boldt">9</td><td></td><td>Total hours spent... (add hours in lines 5-8)</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td></td><td class="slineletearly">a</td><td>... by <b>exempt</b> workers</td><td class="slineno2">9a</td><td class="money"><input class="dollars" name="exh" disabled="disabled" size="10" type="text" value="66"></td><td class="money"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td></td><td class="slineletearly">b</td><td colspan="4">... by <b>non-exempt</b> workers</td><td class="slineno2">9b</td><td class="money"><input class="dollars" name="nonexh" disabled="disabled" size="10" type="text" value="58"></td><td class="money"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="boldt">10</td><td></td><td>Hourly wage...</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td></td><td class="slineletearly">a</td><td>... of <b>exempt</b> workers (line 1)</td><td class="slineno2">10a</td><td class="money"><input class="dollars" name="exwd" disabled="disabled" size="10" type="text" value="50"></td><td class="money"><input class="cents" name="exwc" disabled="disabled" size="2" type="text" value="02"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td></td><td class="slineletearly">b</td><td colspan="4">... of <b>non-exempt</b> workers (line 2)</td><td class="slineno2">10b</td><td class="money"><input class="dollars" name="nonexwd" disabled="disabled" size="10" type="text" value="15"></td><td class="money"><input class="cents" name="nonexwc" disabled="disabled" size="2" type="text" value="17"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td class="boldt">11</td><td></td><td>Total wage bill...</td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td></td><td class="slineletearly">a</td><td>... for <b>exempt</b> workers (line 9a times line 10a)</td><td class="slineno2">11a</td><td class="money"><input class="dollars" name="texd" disabled="disabled" size="10" type="text" value="3,301"></td><td class="money"><input class="cents" name="texc" disabled="disabled" size="2" type="text" value="32"></td><td class="ebox"></td><td class="ebox"></td><td class="ebox"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td></td><td class="slineletearly">b</td><td colspan="4">... for <b>non-exempt</b> workers (line 9b times line 10b)</td><td class="slineno2">11b</td><td class="money"><input class="dollars" name="tnonexd" disabled="disabled" size="10" type="text" value="879"></td><td class="money"><input class="cents" name="tnonexc" disabled="disabled" size="2" type="text" value="86"></td><td class="gbox"></td><td class="ebox"></td><td class="ebox">
+</td></tr>
+<tr>
+<td></td><td class="slineletearly"></td><td colspan="7">Total of lines 11a and 11b</td><td class="lineno2">11</td><td class="money"><input class="dollars" name="wagebilld" disabled="disabled" size="10" type="text" value="4,181"></td><td class="money"><input class="cents" name="wagebillc" disabled="disabled" size="2" type="text" value="18"></td>
+</tr>
+<tr>
+<td class="boldt">12</td><td></td><td colspan="7">Cost of Turnover per <b><a class="toggle" title="nexlang" style="">Non-Exempt or Hourly</a><a class="toggle" title="exlang" style="display: none;">Exempt or Salaried</a></b> Employee (add line 4 to line 11)</td><td class="lineno2">12</td><td class="money"><input class="finaldollars" disabled="disabled" name="averaged" size="10" type="text" value="4,581"></td><td class="money"><input class="finalcents" disabled="disabled" name="averagec" size="2" type="text" value="18"></td>
+</tr>
+<tr class="lastline">
+<td colspan="2"></td><td colspan="7">Total Cost of Turnover from <b><a class="toggle" title="nexlang" style="">Non-Exempt or Hourly</a><a class="toggle" title="exlang" style="display: none;">Exempt or Salaried</a></b> Employees (multiply by line 3)</td><td class="lineno2">13</td><td class="money"><input class="finaldollars" disabled="disabled" name="totald" size="10" type="text" value="45,811"></td><td class="money"><input class="finalcents" disabled="disabled" name="totalc" size="2" type="text" value="80"></td>
+</tr>
+</tbody></table>
+</form>
+
+<p><em>Designed by David Rosnick, <a href="http://cepr.net/">Center for Economic and Policy Research</a>. Data last updated: January 2019.</em></p>
+<p><sup>[<a name="ftn.id1" href="#id1">1</a>]</sup>This calculator 
+provides a simple way for you to calculate the basic costs of turnover, 
+but it is not all-inclusive. There are other hidden costs to calculating
+ turnover, including increases in unemployment insurance contributions, 
+costs to process exit paperwork for the departed employee, and staffing 
+costs to cover the position while it is vacant.</p>
+</td>
+</tr>
+</tbody></table>
+
+
+</body></html>
