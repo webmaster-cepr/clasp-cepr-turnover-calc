@@ -30,16 +30,18 @@ body {
   }
 }
 
-.pathway {
-  font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 10px;
-  color: #666;
-  font-weight: 400;
-  text-align: left;
-  text-decoration: none;
-}
-
 a {
+    
+  &:link {
+    text-decoration: none;
+    font-weight: lighter;
+  }
+  &:visited {
+    text-decoration: none;
+    color: blue;
+    font-weight: lighter;
+  }
+
   &:link.pathway, &:visited.pathway, &:active.pathway {
     text-align: left;
     color: #054785;
@@ -49,17 +51,7 @@ a {
     text-align: left;
     text-decoration: underline;
   }
-}
-
-.links {
-  font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 11px;
-  color: #666;
-  font-weight: 700;
-  text-align: left;
-}
-
-a {
+  
   &:link.links, &:visited.links, &:active.links {
     font-weight: 700;
     text-align: left;
@@ -70,7 +62,252 @@ a {
     text-align: left;
     text-decoration: underline;
   }
+  
+  &.ison {
+    color: green;
+  }
+  &.isoff {
+    color: red;
+  }
+  &.notyet {
+    color: red;
+    border-bottom-style: dotted;
+    border-bottom-width: 1px;
+    font-style: italic;
+  }  
+  
 }
+
+.links {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  color: #666;
+  font-weight: 700;
+  text-align: left;
+}
+
+td {
+  &.boldt {
+    font-weight: bold;
+  }
+  &.box {
+    border-style: solid;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 0px;
+  }
+  &.calc {
+    font-weight: bold;
+  }
+  &.lineno {
+    font-weight: bold;
+    border-top-width: 0px;
+    border-right-width: 0px;
+  }
+  &.linenoearly {
+    font-weight: bold;
+    text-align: center;
+    border-top-width: 0px;
+    border-right-width: 0px;
+  }
+  &.lineno2 {
+    font-weight: bold;
+    border-style: solid;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    text-align: center;
+    vertical-align: bottom;
+    border-top-width: 0px;
+    border-right-width: 0px;
+    border-color: black;
+  }
+  &.money {
+    font-weight: bold;
+    border-style: solid;
+    border-top-width: 0px;
+    border-right-width: 0px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    text-align: center;
+    vertical-align: bottom;
+    border-color: black;
+  }
+  &.lineletearly, &.lineletlate {
+    font-weight: bold;
+    text-align: right;
+    border-top-width: 0px;
+    border-right-width: 0px;
+  }
+  &.note {
+    font-style: italic;
+    font-weight: bold;
+  }
+  &.schedule {
+    font-style: italic;
+    vertical-align: top;
+  }
+  &.slineno {
+    font-style: italic;
+    vertical-align: top;
+    border-top-width: 0px;
+    border-top-width: 0px;
+    border-right-width: 0px;
+  }
+  &.slineno2 {
+    font-style: italic;
+    border-style: solid;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    text-align: center;
+    vertical-align: bottom;
+    border-top-width: 0px;
+    border-right-width: 0px;
+    border-color: black;
+  }
+  &.slineletearly {
+    font-style: italic;
+    text-align: center;
+  }
+  &.slineletlate {
+    font-style: italic;
+    text-align: right;
+  }
+  &.gbox {
+    border-style: solid;
+    border-left-width: 1px;
+    border-top-width: 0px;
+    border-right-width: 0px;
+    border-bottom-width: 0px;
+    border-color: black;
+    background-color: lightgrey;
+  }
+  &.ebox {
+    border-left-width: 1px;
+    border-bottom-width: 0px;
+    border-style: solid;
+    border-top-width: 0px;
+    border-right-width: 0px;
+    border-color: black;
+  }
+  &.firstline {
+    border-bottom-width: 1px;
+    border-style: solid;
+  }
+  &.headline {
+    font-size: 20pt;
+    font-weight: bold;
+    text-align: center;
+    vertical-align: baseline;
+  }
+  &.subheadline {
+    font-size: 15pt;
+    font-weight: bold;
+    text-align: left;
+    vertical-align: baseline;
+  }  
+}
+
+td.st {
+  text-decoration: line-through;
+}
+
+.whitespace {
+  color: white;
+}
+
+tr {
+  vertical-align: top;
+  &.lastline {
+    border-bottom-width: 1px;
+    border-left-width: 0px;
+    border-right-width: 0px;
+    border-top-width: 0px;
+    border-style: solid;
+    border-color: black;
+  }
+}
+
+input {
+  &.dollars {
+    text-align: right;
+    border-style: hidden;
+    color: blue;
+    &:disabled {
+      text-align: right;
+      border-style: hidden;
+      color: grey;
+    }
+  }
+  &.finaldollars:disabled {
+    text-align: right;
+    border-style: hidden;
+    font-weight: bold;
+  }
+  &.cents {
+    text-align: left;
+    border-style: hidden;
+    color: blue;
+    &:disabled {
+      text-align: left;
+      border-style: hidden;
+      color: grey;
+    }
+  }
+  &.finalcents:disabled {
+    text-align: left;
+    border-style: hidden;
+    font-weight: bold;
+  }
+    &.box {
+    border-style: solid;
+    text-align: center;
+  }
+  &.bbox {
+    border-style: hidden;
+    text-align: center;
+    color: grey;
+    &:disabled {
+      border-style: hidden;
+      text-align: center;
+    }
+  }
+  &.bline {
+    border-style: solid;
+    text-align: center;
+    border-bottom-width: 1px;
+    border-top-width: 0px;
+    border-left-width: 0px;
+    border-right-width: 0px;
+    border-color: black;
+    color: blue;
+    &:disabled {
+      border-style: solid;
+      text-align: center;
+      border-bottom-width: 1px;
+      border-top-width: 0px;
+      border-left-width: 0px;
+      border-right-width: 0px;
+      color: grey;
+    }
+  }
+  &.box:disabled {
+    border-style: solid;
+    text-align: center;
+    color: grey;
+    border-color: black;
+  }
+}
+
+.pathway {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  color: #666;
+  font-weight: 400;
+  text-align: left;
+  text-decoration: none;
+}
+
 
 .pageIntro {
   font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -96,4 +333,15 @@ a {
   color: #333;
   line-height: 18px;
   text-align: left;
+}
+
+.hotspot {
+  color: blue;
+  border-bottom-style: dotted;
+  border-bottom-width: 1px;
+}
+
+.annotation {
+  color: red;
+  font-style: italic;
 }
