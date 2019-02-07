@@ -15,8 +15,6 @@ Please note that these questions are best directed to human resources profession
 
     styles.scss
 
-    integrate_styles.scss
-
 - js/
 
 
@@ -34,5 +32,5 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 
 ## To Do
 
-* Migrate js in html to separate file.
-* Integrate css that was originally placed in html file with css that was originally placed in styles.css via SCSS.
+* Clean up HTML
+* Update JavaScript
